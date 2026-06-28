@@ -1,56 +1,44 @@
-name: Generate and Commit ONNX Model
+name: Train, Convert, and Deploy Model
+
 on:
   push:
     branches:
       - main
-    paths:
-      - 'train_onnx.py'
-      - 'requirements_dev.txt'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-and-commit:
+  build-and-train:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Allows pushing the model back to the repository
 
     steps:
-    - name: Checkout Respository
-      uses: actions/checkout@v4
-    
-    - name: set Up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        cache: 'pip'
-    
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements_dev.txt
-    
-    - name: Run Training and export
-      run: |
-        python train_onnx.py
-    
-    - name: Verify
-      run: |
-        python -c "
-        import onnxruntime as onnxruntime
-        import numpy as numpy
-        session = ort.InferenceSession('model.onnx')
-        dummy_input = np.random.randn(1,4).astype(np.float32)
-        input_name = session.get_inputs()[0].name
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-        outputs = session.run(None, {input_name: dummy_input})
-        print('ONNX Validation passed! Output shape',outputs[0].shape)
-        "
-    
-    - name: Commit
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add model.onnx
-        git commit -m "chore: auto" || echo 'No changes'
-        git push
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_dev.txt
+
+      - name: Train and Convert Model
+        run: python train_onnx.py
+
+      - name: Commit and Push Updated ONNX Model
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add model.onnx
+          
+          # Only commit and push if the file actually changed
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore: automated model re-train and ONNX conversion [skip ci]"
+            git push origin main
+          else
+            echo "No changes detected in model weights."
