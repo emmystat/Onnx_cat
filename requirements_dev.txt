@@ -1,0 +1,7 @@
+-r requirements_dev2.txt
+scikit-learn
+xgboost
+onnx
+onnxmltools
+skl2onnx
+onnxruntime
