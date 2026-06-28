@@ -11,7 +11,7 @@ input_name=None
 async def lifespan(app: FastAPI):
     global model_session, input_name
     try:
-        model_session = ort.InferenceSession('model.onnx')
+        model_session = ort.InferenceSession('models/model.onnx')
         input_name = model_session.get_input()[0].name
     except Exception as e:
         print(f"Error:{e}")
