@@ -17,6 +17,6 @@ initial_types = [('input', FloatTensorType([None,4]))]
 
 onnx_model = onnxmltools.convert_xgboost(model, initial_types=initial_types)
 
-with open('model.onnx','wb') as f:
+with open('models/model.onnx','wb') as f:
     f.write(onnx_model.SerializeToString())
 print("Model exported")
