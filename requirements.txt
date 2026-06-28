@@ -1,3 +1,4 @@
--r requirements_dev2.txt
+numpy
+onnxruntime
 fastapi[standard]
 uvicorn[standard]
