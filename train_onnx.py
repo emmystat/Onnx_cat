@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 import onnxmltools
 from onnxmltools.convert.common.data_types import FloatTensorType
+import os
 X, y = make_classification(n_samples=1000, n_features=4, random_state=42)
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -16,6 +17,7 @@ print("Model Trained")
 initial_types = [('input', FloatTensorType([None,4]))]
 
 onnx_model = onnxmltools.convert_xgboost(model, initial_types=initial_types)
+os.makedirs("models", exist_ok=True)
 
 with open('models/model.onnx','wb') as f:
     f.write(onnx_model.SerializeToString())
